@@ -1,49 +1,41 @@
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import shutil
+import datetime
+import os
 
-fun main() {
-    val klasorAdi = "src" // Tarayacağın klasör. testdenemerett
+# Güncellenecek dosya
+dosya_adi = "urls.txt"
 
-
-    // Eski URL -> Yeni URL eşleştirmeleri
-    val urlDegisiklikleri = mapOf(
-        "eski-site1.com" to "yeni-site1.com",
-        "eski-site2.com" to "yeni-site2.com",
-        "eski-site3.com" to "yeni-site3.com"
-    )
-
-    val tarih = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-
-    // Regex ile URL’leri tespit eden basit pattern
-    val urlRegex = Regex("""https?://[^\s"']+""")
-
-    // Klasördeki tüm Kotlin dosyaları
-    val ktDosyalari = File(klasorAdi).walkTopDown().filter { it.isFile && it.extension == "kt" }
-
-    for (dosya in ktDosyalari) {
-        // Yedek oluştur
-        val yedekDosya = File(dosya.parentFile, "${dosya.nameWithoutExtension}_backup_$tarih.kt")
-        dosya.copyTo(yedekDosya)
-        println("Yedek alındı: ${yedekDosya.path}")
-
-        val satirlar = dosya.readLines()
-        val guncellenmisSatirlar = satirlar.map { satir ->
-            var yeniSatir = satir
-            // Satırdaki tüm URL’leri tespit et
-            urlRegex.findAll(satir).forEach { match ->
-                val url = match.value
-                // Eğer URL eşleşiyorsa değiştir
-                urlDegisiklikleri[url]?.let { yeniUrl ->
-                    yeniSatir = yeniSatir.replace(url, yeniUrl)
-                }
-            }
-            yeniSatir
-        }
-
-        dosya.writeText(guncellenmisSatirlar.joinToString("\n"))
-        println("Güncellendi: ${dosya.path}")
-    }
-
-    println("Tüm Kotlin dosyalarındaki URL’ler başarıyla otomatik güncellendi!")
+# Eski URL -> Yeni URL eşleştirmeleri
+url_degisiklikleri = {
+    "eski-site1.com": "yeni-site1.com",
+    "eski-site2.com": "yeni-site2.com",
+    "eski-site3.com": "yeni-site3.com"
 }
+
+# Dosyanın bulunduğu dizin
+dosya_yolu = os.path.join(os.path.dirname(__file__), dosya_adi)
+
+# Yedek dosya adı (tarih ekleyerek)
+tarih = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+yedek_dosya = f"{dosya_yolu}_backup_{tarih}.txt"
+
+# Dosyayı yedekle
+shutil.copyfile(dosya_yolu, yedek_dosya)
+print(f"Yedek alındı: {yedek_dosya}")
+
+# Dosyayı oku
+with open(dosya_yolu, "r", encoding="utf-8") as file:
+satirlar = file.readlines()
+
+# Tüm eski URL'leri yeni URL'lerle değiştir
+guncellenmis_satirlar = []
+for satir in satirlar:
+for eski, yeni in url_degisiklikleri.items():
+satir = satir.replace(eski, yeni)
+guncellenmis_satirlar.append(satir)
+
+# Güncellenmiş URL’leri dosyaya yaz
+with open(dosya_yolu, "w", encoding="utf-8") as file:
+file.writelines(guncellenmis_satirlar)
+
+print("Tüm URL’ler başarıyla güncellendi!")
