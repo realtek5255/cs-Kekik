@@ -3,7 +3,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 fun main() {
-    val klasorAdi = "src" // Tarayacağın klasör
+    val klasorAdi = "src" // Tarayacağın klasör. testtt
+
 
     // Eski URL -> Yeni URL eşleştirmeleri
     val urlDegisiklikleri = mapOf(
